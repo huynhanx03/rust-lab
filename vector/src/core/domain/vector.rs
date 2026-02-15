@@ -1,10 +1,13 @@
 #![allow(dead_code, unused_imports, dead_code)]
 
 use core::{
+    mem,
     ops::{Deref, DerefMut},
     ptr::{self},
+    slice::{Iter, IterMut},
 };
 
+use super::into_iter::IntoIter;
 use crate::{println, shared};
 use shared::allocator::{allocate_block, deallocate_block, drop_contents};
 
@@ -182,10 +185,35 @@ impl<T> MyVector<T> {
     }
 }
 
-impl<T> Drop for MyVector<T> {
-    fn drop(&mut self) {
-        println!("Vector dropped");
-        Self::clean_up(self);
+impl<T> IntoIterator for MyVector<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let len = self.len;
+        let capacity = self.capacity;
+        let ptr = self.ptr;
+
+        mem::forget(self);
+        IntoIter::new(ptr, len, capacity)
+    }
+}
+
+impl<'a, T> IntoIterator for &'a MyVector<T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut MyVector<T> {
+    type Item = &'a mut T;
+    type IntoIter = IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
     }
 }
 
@@ -200,5 +228,12 @@ impl<T> Deref for MyVector<T> {
 impl<T> DerefMut for MyVector<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { core::slice::from_raw_parts_mut(self.ptr, self.len) }
+    }
+}
+
+impl<T> Drop for MyVector<T> {
+    fn drop(&mut self) {
+        println!("Vector dropped");
+        Self::clean_up(self);
     }
 }
