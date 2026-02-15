@@ -10,6 +10,7 @@ fn main() {
     vec.push(1);
     vec.push(2);
     vec.push(3);
+    vec[1] = 4;
     println!("Push: len={}, cap={}", vec.len(), vec.capacity());
 
     vec.insert(1, 100);
@@ -24,8 +25,8 @@ fn main() {
     println!("Remove: {}", removed);
 
     print!("Elements: ");
-    for i in 0..vec.len() {
-        print!("{} ", vec[i]);
+    for x in &vec {
+        print!("{} ", x);
     }
     println!("");
 
@@ -33,8 +34,8 @@ fn main() {
     vec.extend([4, 5]);
 
     print!("Elements: ");
-    for i in 0..vec.len() {
-        print!("{} ", vec[i]);
+    for x in vec.iter().rev() {
+        print!("{} ", x);
     }
     println!("");
 
